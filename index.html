@@ -1,0 +1,1691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>fuel.</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a1a18">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="fuel.">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a18; min-height: 100vh; padding-bottom: env(safe-area-inset-bottom); }
+.nav { background: #fff; border-bottom: 0.5px solid #e0dfd8; padding: 0 20px; padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); display: flex; align-items: center; position: sticky; top: 0; z-index: 100; height: calc(48px + env(safe-area-inset-top)); padding-top: env(safe-area-inset-top); }
+
+/* ── Nav ── */
+.nav-brand { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; flex-shrink: 0; margin-right: 20px; }
+.nav-brand span { color: #1d9e75; }
+.nav-tabs { display: flex; flex: 1; overflow-x: auto; }
+.nav-tab { padding: 0 14px; height: 48px; font-size: 13px; color: #bbb; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; white-space: nowrap; }
+.nav-tab.active { color: #1a1a18; border-bottom-color: #1d9e75; font-weight: 500; }
+.nav-tab:hover:not(.active):not(:disabled) { color: #666; }
+.nav-tab:disabled { cursor: default; }
+
+/* ── Pages ── */
+.page { display: none; max-width: 680px; margin: 0 auto; padding: 0 20px 60px; }
+.page.active { display: block; }
+
+/* ══════════════════════════════
+   ONBOARDING
+══════════════════════════════ */
+.ob-wrap { min-height: calc(100vh - 48px); display: flex; flex-direction: column; }
+
+/* progress bar */
+.ob-progress { padding: 20px 0 0; }
+.ob-progress-track { height: 3px; background: #e8e7e0; border-radius: 99px; overflow: hidden; }
+.ob-progress-fill { height: 100%; background: #1d9e75; border-radius: 99px; transition: width 0.4s ease; }
+.ob-step-label { font-size: 11px; color: #bbb; margin-top: 8px; }
+
+/* step container */
+.ob-step { display: none; flex: 1; padding-top: 36px; }
+.ob-step.active { display: flex; flex-direction: column; }
+
+/* question block */
+.ob-q { margin-bottom: 32px; }
+.ob-q-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #1d9e75; margin-bottom: 10px; }
+.ob-q-title { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.3; margin-bottom: 6px; }
+.ob-q-sub { font-size: 14px; color: #888; line-height: 1.6; }
+
+/* inputs */
+.ob-input-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.ob-field { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 120px; }
+.ob-field label { font-size: 12px; color: #999; font-weight: 500; }
+.ob-field input, .ob-field select {
+  border: 0.5px solid #ddd; border-radius: 10px; padding: 12px 14px;
+  font-size: 15px; font-family: inherit; background: #fff; color: #1a1a18;
+  outline: none; transition: border-color 0.15s; width: 100%;
+}
+.ob-field input:focus, .ob-field select:focus { border-color: #1d9e75; }
+
+/* pill options */
+.ob-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.ob-pill {
+  padding: 9px 16px; border-radius: 99px; border: 0.5px solid #e0dfd8;
+  font-size: 13px; background: #fff; color: #555; cursor: pointer;
+  transition: all 0.15s; user-select: none;
+}
+.ob-pill:hover { border-color: #aaa; }
+.ob-pill.selected { background: #1a1a18; color: #fff; border-color: #1a1a18; }
+.ob-pill.selected-green { background: #1d9e75; color: #fff; border-color: #1d9e75; }
+
+/* card options */
+.ob-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ob-card {
+  border: 0.5px solid #e0dfd8; border-radius: 12px; padding: 14px 16px;
+  cursor: pointer; background: #fff; transition: all 0.15s; text-align: left;
+}
+.ob-card:hover { border-color: #aaa; }
+.ob-card.selected { border-color: #1d9e75; background: #f4fdf9; }
+.ob-card-title { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+.ob-card-desc { font-size: 12px; color: #999; line-height: 1.4; }
+
+/* day description boxes */
+.day-desc-block { margin-bottom: 10px; }
+.day-desc-label { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+.day-desc-name { font-size: 12px; font-weight: 600; color: #bbb; width: 36px; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.04em; }
+.day-desc-name.has-text { color: #1d9e75; }
+.day-desc-hint { font-size: 11px; color: #ccc; }
+.day-desc-input {
+  width: 100%; border: 0.5px solid #e0dfd8; border-radius: 10px;
+  padding: 11px 13px; font-size: 13px; font-family: inherit;
+  background: #fff; color: #1a1a18; outline: none; resize: none;
+  transition: border-color 0.15s; line-height: 1.55;
+}
+.day-desc-input:focus { border-color: #1d9e75; }
+.day-desc-input.has-text { border-color: #9fe1cb; background: #fafffe; }
+
+/* textarea */
+.ob-textarea {
+  width: 100%; border: 0.5px solid #ddd; border-radius: 10px; padding: 12px 14px;
+  font-size: 14px; font-family: inherit; resize: none; outline: none; background: #fff;
+  transition: border-color 0.15s; color: #1a1a18; line-height: 1.6;
+}
+.ob-textarea:focus { border-color: #1d9e75; }
+
+/* nav buttons */
+.ob-nav { display: flex; gap: 10px; padding: 24px 0 0; margin-top: auto; }
+.ob-next {
+  flex: 1; padding: 14px; background: #1a1a18; color: #fff; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 500; cursor: pointer;
+  font-family: inherit; transition: background 0.15s;
+}
+.ob-next:hover { background: #333; }
+.ob-next:disabled { background: #ccc; cursor: default; }
+.ob-back {
+  padding: 14px 18px; background: none; border: 0.5px solid #ddd; border-radius: 10px;
+  font-size: 15px; color: #888; cursor: pointer; font-family: inherit;
+}
+.ob-back:hover { background: #f0efea; }
+
+/* ══════════════════════════════
+   GENERATING
+══════════════════════════════ */
+.gen-wrap { min-height: calc(100vh - 48px); display: flex; align-items: center; justify-content: center; }
+.gen-inner { text-align: center; padding: 40px 20px; }
+.gen-spinner { width: 40px; height: 40px; border: 2px solid #e0dfd8; border-top-color: #1d9e75; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 22px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.gen-title { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+.gen-sub { font-size: 14px; color: #888; }
+.gen-steps { margin-top: 28px; display: flex; flex-direction: column; gap: 8px; }
+.gen-step { font-size: 13px; color: #ccc; transition: color 0.4s; display: flex; align-items: center; gap: 8px; justify-content: center; }
+.gen-step.active { color: #1a1a18; font-weight: 500; }
+.gen-step.done { color: #1d9e75; }
+.gen-step.done::before { content: '✓'; font-size: 12px; }
+.gen-step:not(.done)::before { content: '·'; }
+
+/* ══════════════════════════════
+   MAIN APP
+══════════════════════════════ */
+.app-page { padding-top: 24px; }
+
+/* Day tabs */
+.day-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+.day-btn { padding: 7px 13px; border-radius: 8px; border: 0.5px solid #ddd; background: #fff; font-size: 13px; color: #666; cursor: pointer; transition: all 0.15s; }
+.day-btn.active { background: #1a1a18; color: #fff; border-color: #1a1a18; font-weight: 500; }
+.day-btn:hover:not(.active) { background: #f0efea; }
+
+/* Stats */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 18px; }
+.stat-card { background: #fff; border-radius: 10px; border: 0.5px solid #e8e7e0; padding: 12px 14px; }
+.stat-val { font-size: 20px; font-weight: 600; }
+.stat-lbl { font-size: 11px; color: #999; margin-top: 2px; }
+
+/* Activity badge */
+.activity-row { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+.day-title { font-size: 17px; font-weight: 600; }
+.badge { font-size: 11px; padding: 3px 10px; border-radius: 99px; font-weight: 500; }
+.badge-active { background: #e1f5ee; color: #085041; }
+.badge-rest { background: #f1efe8; color: #555; }
+.badge-game { background: #eeedfe; color: #3c3489; }
+
+/* Meal card */
+.meal-card { background: #fff; border: 0.5px solid #e8e7e0; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+.meal-header { display: flex; align-items: flex-start; gap: 10px; }
+.meal-body { flex: 1; min-width: 0; }
+.meal-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #bbb; margin-bottom: 3px; }
+.meal-name { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+.meal-desc { font-size: 13px; color: #666; line-height: 1.5; }
+.meal-macros { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.macro { font-size: 11px; padding: 2px 8px; border-radius: 99px; }
+.macro-p { background: #e1f5ee; color: #085041; }
+.macro-c { background: #e6f1fb; color: #0c447c; }
+.macro-f { background: #faeeda; color: #633806; }
+.swap-btn { background: none; border: 0.5px solid #e0dfd8; border-radius: 7px; padding: 5px 10px; font-size: 12px; color: #888; cursor: pointer; white-space: nowrap; transition: all 0.15s; flex-shrink: 0; }
+.swap-btn:hover { background: #f0efea; }
+
+/* Progress */
+.progress-wrap { margin-bottom: 13px; }
+.progress-label { display: flex; justify-content: space-between; font-size: 12px; color: #888; margin-bottom: 5px; }
+.progress-bar { height: 5px; background: #eee; border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 99px; transition: width 0.4s; }
+.fill-p { background: #1d9e75; }
+.fill-c { background: #378add; }
+.fill-cal { background: #ba7517; }
+
+/* Week grid */
+.week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 20px; }
+.week-cell { background: #fff; border: 0.5px solid #e8e7e0; border-radius: 10px; padding: 10px 6px; text-align: center; cursor: pointer; transition: all 0.15s; }
+.week-cell:hover { border-color: #1d9e75; }
+.wc-name { font-size: 10px; color: #bbb; font-weight: 600; text-transform: uppercase; }
+.wc-cals { font-size: 14px; font-weight: 600; margin-top: 5px; }
+.wc-act { font-size: 10px; color: #999; margin-top: 3px; line-height: 1.3; min-height: 14px; }
+.wc-dot { width: 6px; height: 6px; border-radius: 99px; margin: 5px auto 0; }
+.dot-active { background: #1d9e75; }
+.dot-rest { background: #ddd; }
+.dot-game { background: #7f77dd; }
+
+.summary-card { background: #fff; border: 0.5px solid #e8e7e0; border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; }
+.summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 0.5px solid #f0efe8; font-size: 14px; }
+.summary-row:last-child { border-bottom: none; }
+.profile-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.profile-chip { background: #fff; border: 0.5px solid #e8e7e0; border-radius: 8px; padding: 7px 12px; font-size: 13px; color: #555; }
+
+/* Extras */
+.extras-card { background: #fff; border: 0.5px solid #e8e7e0; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; margin-top: 6px; }
+.extras-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.extras-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #bbb; }
+.extras-add-btn { font-size: 12px; color: #1d9e75; background: none; border: 0.5px solid #9fe1cb; border-radius: 99px; padding: 4px 12px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.extras-add-btn:hover { background: #f4fdf9; }
+.extra-item { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid #f8f7f4; }
+.extra-item:last-child { border-bottom: none; }
+.extra-name { font-size: 14px; color: #1a1a18; flex: 1; }
+.extra-macros { display: flex; gap: 5px; }
+.extra-remove { background: none; border: none; color: #ddd; font-size: 16px; cursor: pointer; padding: 0 2px; line-height: 1; flex-shrink: 0; }
+.extra-remove:hover { color: #c0392b; }
+.extras-empty { font-size: 13px; color: #ccc; text-align: center; padding: 8px 0; }
+/* Add extra modal */
+.extra-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.extra-field { display: flex; flex-direction: column; gap: 4px; }
+.extra-field.full { grid-column: 1 / -1; }
+.extra-field label { font-size: 11px; color: #999; font-weight: 500; }
+.extra-field input { border: 0.5px solid #ddd; border-radius: 8px; padding: 9px 11px; font-size: 14px; font-family: inherit; background: #fff; color: #1a1a18; outline: none; width: 100%; }
+.extra-field input:focus { border-color: #1d9e75; }
+.extra-lookup-btn { width: 100%; padding: 10px; background: #f5f5f3; border: 0.5px solid #e0dfd8; border-radius: 8px; font-size: 13px; color: #555; cursor: pointer; font-family: inherit; margin-bottom: 12px; transition: background 0.15s; }
+.extra-lookup-btn:hover { background: #eee; }
+.extra-lookup-btn:disabled { opacity: 0.5; cursor: default; }
+.extra-lookup-result { font-size: 12px; color: #888; margin-bottom: 10px; min-height: 16px; }
+
+/* Grocery */
+.grocery-card { background: #fff; border: 0.5px solid #e8e7e0; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+.grocery-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #bbb; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 0.5px solid #f0efe8; }
+.grocery-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid #f8f7f4; }
+.grocery-item:last-child { border-bottom: none; }
+.g-check { width: 17px; height: 17px; border-radius: 5px; border: 1.5px solid #ccc; cursor: pointer; appearance: none; flex-shrink: 0; transition: all 0.15s; }
+.g-check:checked { background: #1d9e75; border-color: #1d9e75; background-image: url("data:image/svg+xml,%3Csvg width='10' height='8' viewBox='0 0 10 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 4L3.5 6.5L9 1' stroke='white' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: center; }
+.g-name { font-size: 13px; flex: 1; }
+.g-name.done { text-decoration: line-through; color: #bbb; }
+.g-qty { font-size: 12px; color: #999; }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 300; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal { background: #fff; border-radius: 14px; padding: 22px; width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto; }
+.modal-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.modal-sub { font-size: 13px; color: #888; margin-bottom: 14px; line-height: 1.5; }
+.modal-textarea { width: 100%; border: 0.5px solid #ddd; border-radius: 8px; padding: 10px 12px; font-size: 13px; font-family: inherit; resize: none; outline: none; }
+.modal-textarea:focus { border-color: #1d9e75; }
+.modal-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.btn-dark { background: #1a1a18; color: #fff; border: none; border-radius: 8px; padding: 9px 18px; font-size: 13px; cursor: pointer; font-family: inherit; }
+.btn-dark:hover { background: #333; }
+.btn-dark:disabled { background: #bbb; cursor: default; }
+.btn-ghost { background: none; border: 0.5px solid #ddd; border-radius: 8px; padding: 9px 18px; font-size: 13px; color: #666; cursor: pointer; font-family: inherit; }
+.btn-ghost:hover { background: #f5f5f3; }
+.btn-green { background: #1d9e75; color: #fff; border: none; border-radius: 8px; padding: 9px 18px; font-size: 13px; cursor: pointer; font-family: inherit; }
+.swap-result { margin-top: 14px; background: #f9f9f7; border-radius: 10px; padding: 14px; font-size: 13px; display: none; }
+.swap-loading { margin-top: 10px; font-size: 13px; color: #999; display: none; }
+
+/* ── Recipe modal ── */
+.recipe-modal { background: #fff; border-radius: 14px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; }
+.recipe-modal-header { padding: 18px 18px 14px; border-bottom: 0.5px solid #f0efe8; }
+.recipe-header-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.recipe-modal-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #bbb; margin-bottom: 4px; }
+.recipe-modal-title { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.3; }
+.recipe-modal-close { background: none; border: 0.5px solid #e8e7e0; border-radius: 99px; width: 28px; height: 28px; font-size: 14px; color: #999; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.recipe-modal-close:hover { background: #f5f5f3; color: #333; }
+.recipe-modal-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.recipe-meta-pill { font-size: 11px; padding: 3px 10px; border-radius: 99px; background: #f5f5f3; color: #666; border: 0.5px solid #e8e7e0; }
+.recipe-servings-row { display: flex; align-items: center; gap: 8px; }
+.recipe-servings-label { font-size: 12px; color: #888; }
+.recipe-serv-btn { width: 24px; height: 24px; border-radius: 99px; border: 0.5px solid #ddd; background: #fff; font-size: 14px; cursor: pointer; color: #555; display: flex; align-items: center; justify-content: center; }
+.recipe-serv-btn:hover { background: #f0efea; }
+.recipe-serv-count { font-size: 14px; font-weight: 600; min-width: 18px; text-align: center; }
+.recipe-modal-body { padding: 16px 18px 28px; }
+.recipe-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #bbb; margin-bottom: 10px; margin-top: 20px; padding-bottom: 6px; border-bottom: 0.5px solid #f0efe8; }
+.recipe-section-title:first-child { margin-top: 0; }
+.recipe-ingredient { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-bottom: 0.5px solid #fafaf8; font-size: 14px; gap: 12px; }
+.recipe-ingredient:last-child { border-bottom: none; }
+.recipe-ing-name { color: #1a1a18; flex: 1; }
+.recipe-ing-qty { color: #888; font-size: 13px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.recipe-step { display: flex; gap: 12px; cursor: pointer; padding: 6px 0; border-radius: 8px; transition: background 0.1s; }
+.recipe-step:hover { background: #fafaf8; }
+.recipe-step-num { width: 22px; height: 22px; border-radius: 99px; background: #1a1a18; color: #fff; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; transition: background 0.2s; }
+.recipe-step.done .recipe-step-num { background: #1d9e75; }
+.recipe-step.done .recipe-step-text { color: #bbb; text-decoration: line-through; text-decoration-color: #ccc; }
+.recipe-step.done .recipe-step-time { color: #ccc; }
+.recipe-step-check { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid #ddd; flex-shrink: 0; margin-top: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.recipe-step.done .recipe-step-check { background: #1d9e75; border-color: #1d9e75; }
+.recipe-step.done .recipe-step-check::after { content: '✓'; font-size: 11px; color: #fff; font-weight: 600; }
+.recipe-tip { background: #f4fdf9; border: 0.5px solid #9fe1cb; border-radius: 8px; padding: 10px 12px; font-size: 13px; color: #0f6e56; line-height: 1.5; margin-top: 16px; }
+.recipe-loading { text-align: center; padding: 48px 20px; }
+.recipe-loading-spinner { width: 28px; height: 28px; border: 2px solid #e0dfd8; border-top-color: #1d9e75; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+.recipe-loading-text { font-size: 13px; color: #999; }
+/* Cook time badge on meal card */
+.meal-cook-time { font-size: 11px; color: #ccc; margin-top: 5px; display: flex; align-items: center; gap: 4px; animation: pulse-text 1.5s ease-in-out infinite; }
+.meal-cook-time.ready { color: #1d9e75; animation: none; }
+@keyframes pulse-text { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+/* Edit meal modal */
+.edit-meal-tabs { display: flex; gap: 0; margin-bottom: 16px; border: 0.5px solid #e0dfd8; border-radius: 8px; overflow: hidden; }
+.edit-meal-tab { flex: 1; padding: 9px; font-size: 13px; border: none; background: #fff; cursor: pointer; font-family: inherit; color: #888; transition: all 0.15s; }
+.edit-meal-tab.active { background: #1a1a18; color: #fff; font-weight: 500; }
+.edit-panel { display: none; }
+.edit-panel.active { display: block; }
+.edit-fields { display: flex; flex-direction: column; gap: 10px; }
+.edit-field { display: flex; flex-direction: column; gap: 4px; }
+.edit-field label { font-size: 11px; color: #999; font-weight: 500; }
+.edit-field input, .edit-field textarea { border: 0.5px solid #ddd; border-radius: 8px; padding: 9px 11px; font-size: 14px; font-family: inherit; background: #fff; color: #1a1a18; outline: none; width: 100%; resize: none; }
+.edit-field input:focus, .edit-field textarea:focus { border-color: #1d9e75; }
+.edit-macro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.takeout-lookup-btn { width: 100%; padding: 10px; background: #f5f5f3; border: 0.5px solid #e0dfd8; border-radius: 8px; font-size: 13px; color: #555; cursor: pointer; font-family: inherit; margin: 10px 0 6px; transition: background 0.15s; }
+.takeout-lookup-btn:hover { background: #eee; }
+.takeout-lookup-btn:disabled { opacity: 0.5; cursor: default; }
+.takeout-lookup-result { font-size: 12px; color: #888; min-height: 16px; margin-bottom: 10px; }
+
+/* Misc */
+.reset-link { font-size: 12px; color: #ccc; cursor: pointer; text-decoration: underline; display: block; text-align: center; margin-top: 20px; }
+.reset-link:hover { color: #888; }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a18; color: #fff; padding: 10px 20px; border-radius: 99px; font-size: 13px; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 400; }
+.toast.show { opacity: 1; }
+.section-hint { font-size: 13px; color: #999; margin-bottom: 16px; }
+.error-msg { font-size: 13px; color: #c0392b; margin-top: 8px; display: none; }
+
+@media (max-width: 480px) {
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .week-grid { grid-template-columns: repeat(4, 1fr); }
+  .ob-cards { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">fuel<span>.</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tab-setup" onclick="showPage('setup')">Setup</button>
+    <button class="nav-tab" id="tab-plan" onclick="showPage('plan')" disabled>Meal plan</button>
+    <button class="nav-tab" id="tab-week" onclick="showPage('week')" disabled>Week</button>
+    <button class="nav-tab" id="tab-grocery" onclick="showPage('grocery')" disabled>Groceries</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════
+     SETUP PAGE (multi-step conversational)
+════════════════════════════════════════ -->
+<div id="page-setup" class="page active">
+<div class="ob-wrap">
+  <div class="ob-progress">
+    <div class="ob-progress-track"><div class="ob-progress-fill" id="ob-fill" style="width:0%"></div></div>
+    <div class="ob-step-label" id="ob-step-label">Step 1 of 3</div>
+  </div>
+
+  <!-- STEP 1: About you -->
+  <div class="ob-step active" id="step-1">
+    <div class="ob-q">
+      <div class="ob-q-label">Step 1 — About you</div>
+      <div class="ob-q-title">Let's start with the basics</div>
+      <div class="ob-q-sub">We use these to calculate your calorie and macro targets accurately.</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="ob-input-row">
+        <div class="ob-field">
+          <label>Age</label>
+          <input type="number" id="s-age" placeholder="23" min="15" max="80">
+        </div>
+        <div class="ob-field">
+          <label>Sex</label>
+          <select id="s-sex">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+      </div>
+      <div class="ob-input-row">
+        <div class="ob-field">
+          <label>Height (cm)</label>
+          <input type="number" id="s-height" placeholder="173" min="140" max="220">
+        </div>
+        <div class="ob-field">
+          <label>Weight (kg)</label>
+          <input type="number" id="s-weight" placeholder="77" min="40" max="200" step="0.1">
+        </div>
+      </div>
+      <div class="ob-input-row">
+        <div class="ob-field">
+          <label>Target weight (kg) <span style="color:#ccc">optional</span></label>
+          <input type="number" id="s-target" placeholder="72" min="40" max="200" step="0.1">
+        </div>
+        <div class="ob-field">
+          <label>Timeframe (weeks) <span style="color:#ccc">optional</span></label>
+          <input type="number" id="s-timeframe" placeholder="12" min="4" max="52">
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:12px;color:#999;font-weight:500;margin-bottom:8px;">What's your main goal?</div>
+        <div class="ob-cards" id="goal-cards">
+          <div class="ob-card selected" data-val="lose fat" onclick="selectCard(this,'goal-cards')">
+            <div class="ob-card-title">Lose fat</div>
+            <div class="ob-card-desc">Moderate deficit, preserve muscle and performance</div>
+          </div>
+          <div class="ob-card" data-val="build muscle" onclick="selectCard(this,'goal-cards')">
+            <div class="ob-card-title">Build muscle</div>
+            <div class="ob-card-desc">Slight surplus to support strength and size gains</div>
+          </div>
+          <div class="ob-card" data-val="maintain and perform" onclick="selectCard(this,'goal-cards')">
+            <div class="ob-card-title">Maintain & perform</div>
+            <div class="ob-card-desc">Eat at maintenance, optimise energy and recovery</div>
+          </div>
+          <div class="ob-card" data-val="body recomposition" onclick="selectCard(this,'goal-cards')">
+            <div class="ob-card-title">Recomposition</div>
+            <div class="ob-card-desc">Lose fat and gain muscle simultaneously</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="error-msg" id="err-1">Please fill in age, height and weight to continue.</div>
+    <div class="ob-nav">
+      <button class="ob-next" onclick="nextStep(1)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Training & lifestyle -->
+  <div class="ob-step" id="step-2">
+    <div class="ob-q">
+      <div class="ob-q-label">Step 2 — Your week</div>
+      <div class="ob-q-title">Describe each day</div>
+      <div class="ob-q-sub">Just write what you actually do — work, training, anything physical. The more detail the better. Leave blank for days you do nothing.</div>
+    </div>
+
+    <div id="sched-grid"></div>
+
+    <div style="margin-top:22px;padding-top:20px;border-top:0.5px solid #eee;">
+      <div style="font-size:12px;color:#999;font-weight:500;margin-bottom:8px;">How much time do you have to cook?</div>
+      <div class="ob-pills" id="cooking-pills">
+        <div class="ob-pill" data-val="minimal — quick meals only" onclick="selectPill(this,'cooking-pills')">Minimal — quick & simple</div>
+        <div class="ob-pill selected" data-val="moderate — happy to cook a few times a week" onclick="selectPill(this,'cooking-pills')">Some — cook a few times</div>
+        <div class="ob-pill" data-val="lots — enjoy cooking and trying new things" onclick="selectPill(this,'cooking-pills')">Lots — I enjoy cooking</div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;">
+      <div style="font-size:12px;color:#999;font-weight:500;margin-bottom:8px;">Happy to batch cook / meal prep?</div>
+      <div class="ob-pills" id="prep-pills">
+        <div class="ob-pill selected" data-val="yes, happy to batch cook on weekends" onclick="selectPill(this,'prep-pills')">Yes, love a Sunday prep</div>
+        <div class="ob-pill" data-val="sometimes, if it saves time" onclick="selectPill(this,'prep-pills')">Sometimes</div>
+        <div class="ob-pill" data-val="no, prefer cooking fresh each day" onclick="selectPill(this,'prep-pills')">Prefer fresh each day</div>
+      </div>
+    </div>
+
+    <div class="ob-nav">
+      <button class="ob-back" onclick="prevStep(2)">←</button>
+      <button class="ob-next" onclick="nextStep(2)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Food preferences -->
+  <div class="ob-step" id="step-3">
+    <div class="ob-q">
+      <div class="ob-q-label">Step 3 — Food preferences</div>
+      <div class="ob-q-title">Any foods to avoid?</div>
+      <div class="ob-q-sub">We'll make sure your plan works around these — every meal will respect your preferences.</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <div>
+        <div style="font-size:12px;color:#999;font-weight:500;margin-bottom:8px;">Dietary requirements</div>
+        <div class="ob-pills" id="diet-pills">
+          <div class="ob-pill" data-val="vegetarian" onclick="togglePill(this)">Vegetarian</div>
+          <div class="ob-pill" data-val="vegan" onclick="togglePill(this)">Vegan</div>
+          <div class="ob-pill" data-val="gluten-free" onclick="togglePill(this)">Gluten-free</div>
+          <div class="ob-pill" data-val="dairy-free" onclick="togglePill(this)">Dairy-free</div>
+          <div class="ob-pill" data-val="halal" onclick="togglePill(this)">Halal</div>
+          <div class="ob-pill" data-val="no seafood" onclick="togglePill(this)">No seafood</div>
+          <div class="ob-pill" data-val="no red meat" onclick="togglePill(this)">No red meat</div>
+          <div class="ob-pill" data-val="nut allergy" onclick="togglePill(this)">Nut allergy</div>
+          <div class="ob-pill" data-val="no pork" onclick="togglePill(this)">No pork</div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:12px;color:#999;font-weight:500;margin-bottom:8px;">Foods you dislike or can't eat</div>
+        <textarea class="ob-textarea" id="s-dislikes" rows="3" placeholder="e.g. tuna, mushrooms, capsicum, cottage cheese..."></textarea>
+      </div>
+
+      <div>
+        <div style="font-size:12px;color:#999;font-weight:500;margin-bottom:8px;">Allergies <span style="color:#ccc;font-weight:400">(type anything not covered above)</span></div>
+        <textarea class="ob-textarea" id="s-allergies" rows="2" placeholder="e.g. shellfish, sesame, eggs..."></textarea>
+      </div>
+
+      <div>
+        <div style="font-size:12px;color:#999;font-weight:500;margin-bottom:8px;">Anything else we should know? <span style="color:#ccc;font-weight:400">optional</span></div>
+        <textarea class="ob-textarea" id="s-other" rows="2" placeholder="e.g. I eat a big breakfast, I skip lunch most days, I prefer Asian-style meals..."></textarea>
+      </div>
+    </div>
+
+    <div class="ob-nav">
+      <button class="ob-back" onclick="prevStep(3)">←</button>
+      <button class="ob-next" onclick="generatePlan()">Generate my plan →</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- GENERATING -->
+<div id="page-generating" class="page">
+  <div class="gen-wrap">
+    <div class="gen-inner">
+      <div class="gen-spinner"></div>
+      <div class="gen-title">Building your plan</div>
+      <div class="gen-sub">Takes about 20 seconds</div>
+      <div class="gen-steps">
+        <div class="gen-step active" id="gs-1">Calculating your calorie & macro targets</div>
+        <div class="gen-step" id="gs-2">Matching meals to your training schedule</div>
+        <div class="gen-step" id="gs-3">Applying your food preferences</div>
+        <div class="gen-step" id="gs-4">Building your grocery list</div>
+        <div class="gen-step" id="gs-5">Finalising your plan</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLAN -->
+<div id="page-plan" class="page app-page"></div>
+
+<!-- WEEK -->
+<div id="page-week" class="page app-page"></div>
+
+<!-- GROCERY -->
+<div id="page-grocery" class="page app-page"></div>
+
+<!-- Swap modal -->
+<div class="modal-overlay" id="swap-modal">
+  <div class="modal">
+    <div class="modal-title" id="swap-title">Swap this meal</div>
+    <div class="modal-sub" id="swap-sub"></div>
+    <textarea class="modal-textarea" id="swap-input" rows="3" placeholder="e.g. 'something quicker', 'no eggs', 'higher protein', 'more filling'..."></textarea>
+    <div class="swap-loading" id="swap-loading">Finding you a better option...</div>
+    <div class="swap-result" id="swap-result"></div>
+    <div class="modal-actions">
+      <button class="btn-dark" id="swap-go" onclick="doSwap()">Suggest a swap ↗</button>
+      <button class="btn-ghost" onclick="closeSwapModal()">Cancel</button>
+      <button class="btn-green" id="swap-save" style="display:none" onclick="saveSwap()">Use this meal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit meal modal -->
+<div class="modal-overlay" id="edit-meal-modal">
+  <div class="modal">
+    <div class="modal-title" id="edit-meal-modal-title">Edit meal</div>
+    <div class="modal-sub" id="edit-meal-modal-sub"></div>
+    <div class="edit-meal-tabs">
+      <button class="edit-meal-tab active" id="edit-tab-update" onclick="switchEditTab('update')">Update meal</button>
+      <button class="edit-meal-tab" id="edit-tab-takeout" onclick="switchEditTab('takeout')">Got takeout</button>
+    </div>
+
+    <!-- Update meal panel -->
+    <div class="edit-panel active" id="edit-panel-update">
+      <div class="edit-fields">
+        <div class="edit-field">
+          <label>Meal name</label>
+          <input type="text" id="edit-name" placeholder="Meal name">
+        </div>
+        <div class="edit-field">
+          <label>Description</label>
+          <textarea id="edit-desc" rows="2" placeholder="Ingredients and brief method…"></textarea>
+        </div>
+        <div class="edit-macro-grid">
+          <div class="edit-field"><label>Protein (g)</label><input type="number" id="edit-protein" min="0" step="0.1"></div>
+          <div class="edit-field"><label>Carbs (g)</label><input type="number" id="edit-carbs" min="0" step="0.1"></div>
+          <div class="edit-field"><label>Fat (g)</label><input type="number" id="edit-fat" min="0" step="0.1"></div>
+          <div class="edit-field"><label>Calories (auto)</label><input type="number" id="edit-cals-display" disabled style="background:#f9f9f7;color:#aaa"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Takeout panel -->
+    <div class="edit-panel" id="edit-panel-takeout">
+      <div class="edit-field" style="margin-bottom:4px;">
+        <label>What did you get?</label>
+        <input type="text" id="takeout-name" placeholder="e.g. McDonald's Big Mac meal, Subway 6-inch chicken…">
+      </div>
+      <button class="takeout-lookup-btn" id="takeout-lookup-btn" onclick="lookupTakeout()">Look up macros automatically ↗</button>
+      <div class="takeout-lookup-result" id="takeout-lookup-result"></div>
+      <div class="edit-macro-grid">
+        <div class="edit-field"><label>Protein (g)</label><input type="number" id="takeout-protein" min="0" step="0.1" placeholder="0"></div>
+        <div class="edit-field"><label>Carbs (g)</label><input type="number" id="takeout-carbs" min="0" step="0.1" placeholder="0"></div>
+        <div class="edit-field"><label>Fat (g)</label><input type="number" id="takeout-fat" min="0" step="0.1" placeholder="0"></div>
+        <div class="edit-field"><label>Calories (auto)</label><input type="number" id="takeout-cals-display" disabled style="background:#f9f9f7;color:#aaa"></div>
+      </div>
+    </div>
+
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn-dark" onclick="saveEditMeal()">Save changes</button>
+      <button class="btn-ghost" onclick="closeEditMealModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Extras modal -->
+<div class="modal-overlay" id="extras-modal">
+  <div class="modal">
+    <div class="modal-title">Add an extra</div>
+    <div class="modal-sub">Something not on the plan — a snack, drink, supplement, or anything else.</div>
+    <div class="extra-field full" style="margin-bottom:10px;">
+      <label>Name</label>
+      <input type="text" id="extra-name" placeholder="e.g. Gatorade, muesli bar, coffee with milk…">
+    </div>
+    <button class="extra-lookup-btn" id="extra-lookup-btn" onclick="lookupExtra()">Look up macros automatically ↗</button>
+    <div class="extra-lookup-result" id="extra-lookup-result"></div>
+    <div class="extra-fields">
+      <div class="extra-field">
+        <label>Calories</label>
+        <input type="number" id="extra-cals" placeholder="0" min="0">
+      </div>
+      <div class="extra-field">
+        <label>Protein (g)</label>
+        <input type="number" id="extra-protein" placeholder="0" min="0" step="0.1">
+      </div>
+      <div class="extra-field">
+        <label>Carbs (g)</label>
+        <input type="number" id="extra-carbs" placeholder="0" min="0" step="0.1">
+      </div>
+      <div class="extra-field">
+        <label>Fat (g)</label>
+        <input type="number" id="extra-fat" placeholder="0" min="0" step="0.1">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-dark" onclick="saveExtra()">Add to day</button>
+      <button class="btn-ghost" onclick="closeExtrasModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Recipe modal -->
+<div class="modal-overlay" id="recipe-modal">
+  <div class="recipe-modal">
+    <div class="recipe-modal-header">
+      <div class="recipe-header-top">
+        <div>
+          <div class="recipe-modal-label" id="recipe-label"></div>
+          <div class="recipe-modal-title" id="recipe-title"></div>
+        </div>
+        <button class="recipe-modal-close" onclick="closeRecipeModal()">✕</button>
+      </div>
+      <div class="recipe-modal-meta" id="recipe-meta"></div>
+    </div>
+    <div class="recipe-modal-body" id="recipe-body">
+      <div class="recipe-loading">
+        <div class="recipe-loading-spinner"></div>
+        <div class="recipe-loading-text">Fetching recipe…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'fuel_v3';
+const DAY_NAMES = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const DAY_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+let STATE = {
+  profile: null,
+  plan: null,
+  grocery: null,
+  checkedItems: {},
+  activePlanDay: 0,
+  extras: {}, // key: dayIndex, value: array of {name, cals, protein, carbs, fat}
+};
+let swapDayIdx = null, swapMealIdx = null, pendingSwap = null;
+
+// ─── Boot ───
+function boot() {
+  buildSchedGrid();
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    try {
+      const saved = JSON.parse(raw);
+      STATE = { ...STATE, ...saved };
+      if (STATE.plan) { unlockTabs(); showPage('plan'); setTimeout(preGenerateRecipes, 1000); }
+    } catch(e) {}
+  }
+}
+
+const DAY_PLACEHOLDERS = [
+  'e.g. Office job, sitting at a desk most of the day. No training.',
+  'e.g. Desk job until 5pm, then route setting at the climbing gym for 2–3 hours — physical, on my feet moving holds around.',
+  'e.g. Work from home (mostly sitting). AFL training in the evening, about 90 mins of drills and conditioning. Pretty intense.',
+  'e.g. Office day. Climbing session after work, about 1.5 hrs of bouldering, moderate intensity.',
+  'e.g. Desk job. AFL game in the afternoon — full match, very high intensity, around 2 hours including warm up.',
+  'e.g. Rest day. Might go for a casual 20 min walk but nothing structured.',
+  'e.g. Climbing at the gym in the morning, about 1.5 hrs. Rest of the day pretty relaxed.',
+];
+
+function buildSchedGrid() {
+  const grid = document.getElementById('sched-grid');
+  grid.innerHTML = DAY_NAMES.map((day, i) => `
+    <div class="day-desc-block">
+      <div class="day-desc-label">
+        <span class="day-desc-name" id="ddl-${i}">${DAY_SHORT[i]}</span>
+        <span class="day-desc-hint">What does your ${day} typically look like?</span>
+      </div>
+      <textarea
+        class="day-desc-input"
+        id="day-desc-${i}"
+        rows="2"
+        placeholder="${DAY_PLACEHOLDERS[i]}"
+        oninput="onDayDescInput(${i}, this)"
+      ></textarea>
+    </div>
+  `).join('');
+}
+
+function onDayDescInput(i, el) {
+  const hasText = el.value.trim().length > 0;
+  el.classList.toggle('has-text', hasText);
+  document.getElementById('ddl-' + i).classList.toggle('has-text', hasText);
+  // auto-grow
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+// ─── Step navigation ───
+let currentStep = 1;
+const TOTAL_STEPS = 3;
+
+function updateProgress(step) {
+  const pct = ((step - 1) / TOTAL_STEPS) * 100;
+  document.getElementById('ob-fill').style.width = pct + '%';
+  document.getElementById('ob-step-label').textContent = `Step ${step} of ${TOTAL_STEPS}`;
+}
+
+function nextStep(from) {
+  if (from === 1) {
+    const age = document.getElementById('s-age').value;
+    const height = document.getElementById('s-height').value;
+    const weight = document.getElementById('s-weight').value;
+    if (!age || !height || !weight) {
+      document.getElementById('err-1').style.display = 'block';
+      return;
+    }
+    document.getElementById('err-1').style.display = 'none';
+  }
+  document.getElementById('step-' + from).classList.remove('active');
+  document.getElementById('step-' + (from + 1)).classList.add('active');
+  currentStep = from + 1;
+  updateProgress(currentStep);
+  window.scrollTo(0, 0);
+}
+
+function prevStep(from) {
+  document.getElementById('step-' + from).classList.remove('active');
+  document.getElementById('step-' + (from - 1)).classList.add('active');
+  currentStep = from - 1;
+  updateProgress(currentStep);
+  window.scrollTo(0, 0);
+}
+
+// ─── Pill / card helpers ───
+function selectPill(el, groupId) {
+  document.querySelectorAll(`#${groupId} .ob-pill`).forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function togglePill(el) { el.classList.toggle('selected'); }
+
+function selectCard(el, groupId) {
+  document.querySelectorAll(`#${groupId} .ob-card`).forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function getPill(groupId) {
+  return document.querySelector(`#${groupId} .ob-pill.selected`)?.dataset.val || '';
+}
+
+function getMultiPills(groupId) {
+  return [...document.querySelectorAll(`#${groupId} .ob-pill.selected`)].map(p => p.dataset.val);
+}
+
+function getCard(groupId) {
+  return document.querySelector(`#${groupId} .ob-card.selected`)?.dataset.val || '';
+}
+
+// ─── Generate ───
+async function generatePlan() {
+  const age = parseInt(document.getElementById('s-age').value);
+  const sex = document.getElementById('s-sex').value;
+  const height = parseInt(document.getElementById('s-height').value);
+  const weight = parseFloat(document.getElementById('s-weight').value);
+  const target = parseFloat(document.getElementById('s-target').value) || null;
+  const timeframe = parseInt(document.getElementById('s-timeframe').value) || null;
+  const goal = getCard('goal-cards') || 'lose fat';
+  const cooking = getPill('cooking-pills');
+  const prep = getPill('prep-pills');
+  const dietReqs = getMultiPills('diet-pills');
+  const dislikes = document.getElementById('s-dislikes').value.trim();
+  const allergies = document.getElementById('s-allergies').value.trim();
+  const other = document.getElementById('s-other').value.trim();
+
+  const schedule = DAY_NAMES.map((day, i) => {
+    const desc = document.getElementById(`day-desc-${i}`)?.value.trim() || '';
+    return { day, description: desc || 'No activity — rest day' };
+  });
+
+  // Rough TDEE — AI will use the day descriptions to refine per-day targets
+  const bmr = sex === 'male'
+    ? 10 * weight + 6.25 * height - 5 * age + 5
+    : 10 * weight + 6.25 * height - 5 * age - 161;
+  const activeDays = schedule.filter(s => s.description !== 'No activity — rest day').length;
+  const baseMultiplier = activeDays >= 5 ? 1.725 : activeDays >= 3 ? 1.55 : 1.375;
+  const tdee = Math.round(bmr * baseMultiplier);
+  const deficitMap = { 'lose fat': -400, 'build muscle': 300, 'maintain and perform': 0, 'body recomposition': -200 };
+  const targetCals = tdee + (deficitMap[goal] || -300);
+
+  STATE.profile = { age, sex, height, weight, target, timeframe, goal, cooking, prep, dietReqs, dislikes, allergies, other, schedule };
+
+  showRawPage('generating');
+  animateSteps();
+
+  const scheduleDetail = schedule.map(s => `${s.day}: ${s.description}`).join('\n');
+
+  const prompt = `You are an expert sports nutritionist. Generate a complete personalised 7-day meal plan as JSON only.
+
+Athlete profile:
+- Age: ${age}, Sex: ${sex}, Height: ${height}cm, Weight: ${weight}kg${target ? `, Target weight: ${target}kg` : ''}${timeframe ? `, Timeframe: ${timeframe} weeks` : ''}
+- Goal: ${goal}
+- Estimated weekly average TDEE: ${tdee} kcal/day. Average target: ${targetCals} kcal/day
+- Cooking time available: ${cooking}
+- Batch meal prep: ${prep}
+- Dietary requirements: ${dietReqs.length ? dietReqs.join(', ') : 'none'}
+- Foods to avoid / dislikes: ${dislikes || 'none'}
+- Allergies: ${allergies || 'none'}
+- Additional context: ${other || 'none'}
+
+Here is a description of each day of the week in their own words — use this to understand their energy demands, activity types, timing, and lifestyle:
+${scheduleDetail}
+
+Instructions:
+1. Read each day's description carefully. Infer the activity type, duration, intensity, and whether it's a training session, match/game day, or rest day. Use this to set per-day calorie and carb targets — a 2-hour AFL game needs significantly more food than a desk-job rest day.
+2. On days with matches/games/competitions: include a specifically labelled pre-game meal (3–4 hrs before) and a post-game recovery meal.
+3. On training days: time carbs around the session — higher carb meals before and after.
+4. Rest days: reduce carbs by ~30% and total calories by ~200–300 vs average.
+5. Protein: ~${Math.round(weight * 2)}g every day without exception.
+6. Meals per day: 3–4 on rest days, 4–5 on active/game days.
+7. Use real ingredients with gram quantities. Keep descriptions practical and brief.
+8. Respect all dietary requirements, dislikes, and allergies — zero exceptions.
+9. Vary meals — no meal repeats more than twice across the week.
+10. "type" field: "rest" = rest/low activity day, "active" = training session, "game" = match/race/competition.
+11. If batch cooking is preferred, flag it naturally in meal descriptions.
+12. Make meals feel genuinely appealing — not bland diet food.
+
+Respond ONLY with valid JSON matching this exact structure (no markdown fences, no extra text):
+{
+  "days": [
+    {
+      "day": "Monday",
+      "activity": "Rest",
+      "type": "rest",
+      "targetCals": 2100,
+      "targetProtein": 154,
+      "targetCarbs": 160,
+      "targetFat": 65,
+      "meals": [
+        {
+          "label": "Breakfast",
+          "name": "Meal name here",
+          "desc": "Ingredients with amounts. Brief cooking note.",
+          "protein": 30,
+          "carbs": 40,
+          "fat": 12
+        }
+      ]
+    }
+  ],
+  "grocery": {
+    "🥩 Meat & fish": [{"item": "Chicken breast", "qty": "~800g"}],
+    "🥛 Dairy & eggs": [],
+    "🥦 Produce": [],
+    "🌾 Pantry & grains": [],
+    "🫙 Sauces & condiments": [],
+    "🧃 Other": []
+  }
+}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 8000, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await resp.json();
+    const text = data.content.map(b => b.text || '').join('').replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(text);
+    STATE.plan = parsed.days;
+    STATE.grocery = parsed.grocery;
+    STATE.activePlanDay = 0;
+    saveState();
+    unlockTabs();
+    showPage('plan');
+    // Start background recipe pre-generation
+    setTimeout(preGenerateRecipes, 1500);
+  } catch(e) {
+    console.error(e);
+    showRawPage('setup');
+    document.getElementById('tab-setup').classList.add('active');
+    showToast('Something went wrong — please try again');
+  }
+}
+
+function animateSteps() {
+  let i = 1;
+  const iv = setInterval(() => {
+    if (i > 1) document.getElementById('gs-' + (i-1)).className = 'gen-step done';
+    if (i <= 5) { document.getElementById('gs-' + i).className = 'gen-step active'; i++; }
+    else clearInterval(iv);
+  }, 3500);
+}
+
+// ─── Pages ───
+function showRawPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const tab = document.getElementById('tab-' + name);
+  if (tab) tab.classList.add('active');
+}
+
+function showPage(name) {
+  showRawPage(name);
+  if (name === 'plan') renderPlan();
+  if (name === 'week') renderWeek();
+  if (name === 'grocery') renderGrocery();
+}
+
+function unlockTabs() {
+  ['plan','week','grocery'].forEach(t => { document.getElementById('tab-' + t).disabled = false; });
+}
+
+// ─── Render Plan ───
+function renderPlan() {
+  const c = document.getElementById('page-plan');
+  if (!STATE.plan) { c.innerHTML = emptyState('No plan yet', 'Go to Setup to generate your personalised meal plan.'); return; }
+  const di = STATE.activePlanDay;
+  const d = STATE.plan[di];
+  const extras = STATE.extras[di] || [];
+
+  const p = d.meals.reduce((s,m) => s+(m.protein||0), 0) + extras.reduce((s,e) => s+(e.protein||0), 0);
+  const carbs = d.meals.reduce((s,m) => s+(m.carbs||0), 0) + extras.reduce((s,e) => s+(e.carbs||0), 0);
+  const fat = d.meals.reduce((s,m) => s+(m.fat||0), 0) + extras.reduce((s,e) => s+(e.fat||0), 0);
+  const cals = Math.round(p*4 + carbs*4 + fat*9);
+
+  const extrasHtml = extrasSection(di, extras);
+
+  c.innerHTML = `
+    <div class="day-tabs">${STATE.plan.map((day,i) => `<button class="day-btn ${i===di?'active':''}" onclick="selectDay(${i})">${DAY_SHORT[i]}</button>`).join('')}</div>
+    <div class="activity-row">
+      <span class="day-title">${d.day}</span>
+      ${badge(d.type, d.activity)}
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-val">${cals}</div><div class="stat-lbl">calories (target ${d.targetCals||'—'})</div></div>
+      <div class="stat-card"><div class="stat-val">${p}g</div><div class="stat-lbl">protein (target ${d.targetProtein||'—'}g)</div></div>
+      <div class="stat-card"><div class="stat-val">${carbs}g</div><div class="stat-lbl">carbs</div></div>
+      <div class="stat-card"><div class="stat-val">${fat}g</div><div class="stat-lbl">fat</div></div>
+    </div>
+    ${progressBar('Protein', p, d.targetProtein||150, 'fill-p')}
+    ${progressBar('Carbs', carbs, d.targetCarbs||200, 'fill-c')}
+    ${progressBar('Calories', cals, d.targetCals||2200, 'fill-cal')}
+    ${d.meals.map((m,mi) => mealCard(m, di, mi)).join('')}
+    ${extrasHtml}
+    <span class="reset-link" onclick="confirmReset()">Start over with a new plan</span>
+  `;
+}
+
+function extrasSection(di, extras) {
+  const rows = extras.length
+    ? extras.map((e, ei) => `
+        <div class="extra-item">
+          <span class="extra-name">${e.name}</span>
+          <div class="extra-macros">
+            ${e.protein > 0 ? `<span class="macro macro-p">${e.protein}g P</span>` : ''}
+            ${e.carbs > 0 ? `<span class="macro macro-c">${e.carbs}g C</span>` : ''}
+            ${e.fat > 0 ? `<span class="macro macro-f">${e.fat}g F</span>` : ''}
+            ${e.cals > 0 ? `<span class="macro" style="background:#f5f5f3;color:#888">${e.cals} kcal</span>` : ''}
+          </div>
+          <button class="extra-remove" onclick="removeExtra(${di},${ei})" title="Remove">×</button>
+        </div>`)
+        .join('')
+    : `<div class="extras-empty">Nothing added yet</div>`;
+
+  return `
+    <div class="extras-card">
+      <div class="extras-header">
+        <span class="extras-title">Extras</span>
+        <button class="extras-add-btn" onclick="openExtrasModal(${di})">+ Add</button>
+      </div>
+      ${rows}
+    </div>`;
+}
+
+function selectDay(i) { STATE.activePlanDay = i; renderPlan(); }
+
+function badge(type, activity) {
+  if (type === 'game') return `<span class="badge badge-game">Game day — ${activity}</span>`;
+  if (type === 'active') return `<span class="badge badge-active">Active — ${activity}</span>`;
+  return `<span class="badge badge-rest">Rest day</span>`;
+}
+
+function progressBar(label, val, target, cls) {
+  const pct = Math.min(100, Math.round((val / target) * 100));
+  return `<div class="progress-wrap"><div class="progress-label"><span>${label}</span><span>${val} / ${target}</span></div><div class="progress-bar"><div class="progress-fill ${cls}" style="width:${pct}%"></div></div></div>`;
+}
+
+function mealCard(m, di, mi) {
+  const cached = recipeCache[`${di}-${mi}`];
+  const hasRecipe = cached && cached !== 'loading' && cached !== 'error';
+  const totalMins = hasRecipe ? parseMins(cached.prepTime) + parseMins(cached.cookTime) : null;
+  const cookTimeHtml = totalMins !== null
+    ? `<div class="meal-cook-time ready" id="cook-time-${di}-${mi}">⏱ ${totalMins} min total</div>`
+    : cached === 'loading'
+      ? `<div class="meal-cook-time" id="cook-time-${di}-${mi}">⏱ calculating…</div>`
+      : `<div class="meal-cook-time" id="cook-time-${di}-${mi}">⏱ calculating…</div>`;
+  const isEdited = m.edited ? `<span style="font-size:10px;color:#ba7517;margin-left:6px;font-weight:500">edited</span>` : '';
+  const isTakeout = m.takeout ? `<span style="font-size:10px;color:#7f77dd;margin-left:6px;font-weight:500">takeout</span>` : '';
+  return `<div class="meal-card">
+    <div class="meal-header">
+      <div class="meal-body">
+        <div class="meal-label">${m.label}</div>
+        <div class="meal-name">${m.name}${isEdited}${isTakeout}</div>
+        <div class="meal-desc">${m.desc}</div>
+        <div class="meal-macros">
+          <span class="macro macro-p">${m.protein}g protein</span>
+          <span class="macro macro-c">${m.carbs}g carbs</span>
+          <span class="macro macro-f">${m.fat}g fat</span>
+        </div>
+        ${cookTimeHtml}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+        <button class="swap-btn" onclick="openSwap(${di},${mi})">swap</button>
+        <button class="swap-btn" style="color:#1d9e75;border-color:#9fe1cb" onclick="openRecipe(${di},${mi})">recipe</button>
+        <button class="swap-btn" style="color:#555;border-color:#ddd" onclick="openEditMeal(${di},${mi})">edit</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── Render Week ───
+function renderWeek() {
+  const c = document.getElementById('page-week');
+  if (!STATE.plan) { c.innerHTML = emptyState('No plan yet', 'Generate your plan first.'); return; }
+  const totalCals = STATE.plan.reduce((s,d) => s + d.meals.reduce((ms,m) => ms+m.protein*4+m.carbs*4+m.fat*9, 0), 0);
+  const totalP = STATE.plan.reduce((s,d) => s + d.meals.reduce((ms,m) => ms+m.protein, 0), 0);
+  const p = STATE.profile;
+
+  const chips = p ? `<div class="profile-chips">
+    <div class="profile-chip">${p.age}yo ${p.sex}</div>
+    <div class="profile-chip">${p.height}cm · ${p.weight}kg</div>
+    ${p.target ? `<div class="profile-chip">→ ${p.target}kg</div>` : ''}
+    <div class="profile-chip">${p.goal}</div>
+  </div>` : '';
+
+  const grid = STATE.plan.map((d,i) => {
+    const cals = Math.round(d.meals.reduce((s,m) => s+m.protein*4+m.carbs*4+m.fat*9, 0));
+    const dotCls = d.type==='game'?'dot-game':d.type==='active'?'dot-active':'dot-rest';
+    return `<div class="week-cell" onclick="goToPlanDay(${i})"><div class="wc-name">${DAY_SHORT[i]}</div><div class="wc-cals">${cals}</div><div class="wc-act">${d.activity!=='Rest'?d.activity:''}</div><div class="wc-dot ${dotCls}"></div></div>`;
+  }).join('');
+
+  c.innerHTML = `
+    ${chips}
+    <div class="section-hint">Tap any day to view its meals</div>
+    <div class="week-grid">${grid}</div>
+    <div class="summary-card">
+      <div class="summary-row"><span>Weekly total</span><span style="font-weight:500">${Math.round(totalCals).toLocaleString()} kcal</span></div>
+      <div class="summary-row"><span>Daily average</span><span style="font-weight:500">${Math.round(totalCals/7)} kcal</span></div>
+      <div class="summary-row"><span>Avg protein / day</span><span style="font-weight:500">${Math.round(totalP/7)}g</span></div>
+      <div class="summary-row"><span>Training days</span><span style="font-weight:500">${STATE.plan.filter(d=>d.type!=='rest').length} of 7</span></div>
+      <div class="summary-row"><span>Game / match days</span><span style="font-weight:500">${STATE.plan.filter(d=>d.type==='game').length}</span></div>
+    </div>
+    <span class="reset-link" onclick="confirmReset()">Start over with a new plan</span>
+  `;
+}
+
+function goToPlanDay(i) { STATE.activePlanDay = i; showPage('plan'); }
+
+// ─── Render Grocery ───
+function renderGrocery() {
+  const c = document.getElementById('page-grocery');
+  if (!STATE.grocery) { c.innerHTML = emptyState('No grocery list yet', 'Generate your plan first.'); return; }
+  let html = `<div class="section-hint">Everything for your full week. Tick items off as you shop.</div>`;
+  for (const [section, items] of Object.entries(STATE.grocery)) {
+    if (!items?.length) continue;
+    const rows = items.map((item, idx) => {
+      const key = section + '_' + idx;
+      const checked = STATE.checkedItems[key] || false;
+      return `<div class="grocery-item"><input type="checkbox" class="g-check" ${checked?'checked':''} onchange="toggleGrocery('${key}',this)"><span class="g-name ${checked?'done':''}" id="gn-${key}">${item.item}</span><span class="g-qty">${item.qty||''}</span></div>`;
+    }).join('');
+    html += `<div class="grocery-card"><div class="grocery-section-title">${section}</div>${rows}</div>`;
+  }
+  c.innerHTML = html;
+}
+
+function toggleGrocery(key, el) {
+  STATE.checkedItems[key] = el.checked;
+  const t = document.getElementById('gn-' + key);
+  if (t) t.className = 'g-name' + (el.checked ? ' done' : '');
+  saveState();
+}
+
+// ─── Swap ───
+function openSwap(di, mi) {
+  swapDayIdx = di; swapMealIdx = mi; pendingSwap = null;
+  const m = STATE.plan[di].meals[mi];
+  document.getElementById('swap-title').textContent = `Swap: ${m.name}`;
+  document.getElementById('swap-sub').textContent = `${m.label} on ${STATE.plan[di].day}. Tell me what you'd prefer, or leave blank for a similar alternative.`;
+  document.getElementById('swap-input').value = '';
+  document.getElementById('swap-result').style.display = 'none';
+  document.getElementById('swap-loading').style.display = 'none';
+  document.getElementById('swap-go').style.display = 'inline-block';
+  document.getElementById('swap-go').textContent = 'Suggest a swap ↗';
+  document.getElementById('swap-go').disabled = false;
+  document.getElementById('swap-save').style.display = 'none';
+  document.getElementById('swap-modal').classList.add('open');
+}
+
+function closeSwapModal() { document.getElementById('swap-modal').classList.remove('open'); }
+
+async function doSwap() {
+  const pref = document.getElementById('swap-input').value.trim();
+  const goBtn = document.getElementById('swap-go');
+  const loading = document.getElementById('swap-loading');
+  const resultEl = document.getElementById('swap-result');
+  const d = STATE.plan[swapDayIdx];
+  const m = d.meals[swapMealIdx];
+  const p = STATE.profile;
+
+  goBtn.disabled = true;
+  loading.style.display = 'block';
+  resultEl.style.display = 'none';
+
+  const prompt = `Sports nutritionist. Suggest ONE meal swap. Respond ONLY with JSON, no extra text.
+
+Athlete: ${p?.age}yo ${p?.sex}, ${p?.height}cm, ${p?.weight}kg, goal: ${p?.goal}
+Dislikes: ${p?.dislikes||'none'} | Allergies: ${p?.allergies||'none'} | Diet reqs: ${p?.dietReqs?.join(', ')||'none'}
+
+Replacing: ${m.label} on ${d.day} (${d.activity}, ${d.type} day)
+Current meal: ${m.name} — ${m.desc}
+Current macros: ${m.protein}g protein, ${m.carbs}g carbs, ${m.fat}g fat
+User request: "${pref||'similar macros, different meal'}"
+
+JSON format only:
+{"name":"","desc":"ingredients with quantities and brief cooking note","protein":0,"carbs":0,"fat":0}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 800, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await resp.json();
+    const text = data.content.map(b => b.text||'').join('').replace(/```json|```/g,'').trim();
+    pendingSwap = JSON.parse(text);
+    resultEl.innerHTML = `<div style="font-weight:500;font-size:14px;margin-bottom:4px">${pendingSwap.name}</div><div style="font-size:13px;color:#555;margin-bottom:10px">${pendingSwap.desc}</div><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="macro macro-p">${pendingSwap.protein}g protein</span><span class="macro macro-c">${pendingSwap.carbs}g carbs</span><span class="macro macro-f">${pendingSwap.fat}g fat</span></div>`;
+    resultEl.style.display = 'block';
+    document.getElementById('swap-save').style.display = 'inline-block';
+    goBtn.textContent = 'Try again ↗';
+  } catch(e) {
+    resultEl.innerHTML = `<span style="color:#c0392b">Something went wrong. Try again.</span>`;
+    resultEl.style.display = 'block';
+  }
+  loading.style.display = 'none';
+  goBtn.disabled = false;
+}
+
+function saveSwap() {
+  if (!pendingSwap) return;
+  const m = STATE.plan[swapDayIdx].meals[swapMealIdx];
+  STATE.plan[swapDayIdx].meals[swapMealIdx] = { ...m, ...pendingSwap };
+  // Clear cached recipe for this meal so it regenerates with the new meal
+  delete recipeCache[`${swapDayIdx}-${swapMealIdx}`];
+  saveState();
+  closeSwapModal();
+  renderPlan();
+  showToast('Meal updated');
+}
+
+// ─── Recipe ───
+let recipeBaseServings = 1;
+let recipeCurrentServings = 1;
+let recipeData = null;
+let completedSteps = new Set();
+
+// Cache: key = "dayIdx-mealIdx", value = recipe object or 'loading' or 'error'
+const recipeCache = {};
+
+// Kick off background pre-generation after plan loads
+function preGenerateRecipes() {
+  if (!STATE.plan) return;
+  const jobs = [];
+  STATE.plan.forEach((day, di) => {
+    day.meals.forEach((meal, mi) => {
+      jobs.push({ di, mi, meal, day });
+    });
+  });
+  // Stagger requests so we don't hammer the API all at once
+  jobs.forEach((job, idx) => {
+    setTimeout(() => {
+      const key = `${job.di}-${job.mi}`;
+      if (recipeCache[key]) return; // already cached or loading
+      recipeCache[key] = 'loading';
+      buildRecipePrompt(job.meal, job.day).then(recipe => {
+        recipeCache[key] = recipe;
+        // Update the cook time badge in-place if this day is currently visible
+        if (STATE.activePlanDay === job.di) {
+          const el = document.getElementById(`cook-time-${job.di}-${job.mi}`);
+          if (el) {
+            const total = parseMins(recipe.prepTime) + parseMins(recipe.cookTime);
+            el.className = 'meal-cook-time ready';
+            el.textContent = `⏱ ${total} min total`;
+          }
+        }
+        // If the recipe modal is currently showing this meal, render it
+        if (currentRecipeKey === key) {
+          recipeData = recipe;
+          recipeBaseServings = recipe.servings || 1;
+          recipeCurrentServings = 1;
+          renderRecipeBody();
+        }
+      }).catch(() => {
+        recipeCache[key] = 'error';
+        if (STATE.activePlanDay === job.di) {
+          const el = document.getElementById(`cook-time-${job.di}-${job.mi}`);
+          if (el) { el.className = 'meal-cook-time'; el.textContent = '⏱ —'; }
+        }
+      });
+    }, idx * 800); // 800ms between each — ~25 meals = ~20s total in background
+  });
+}
+
+let currentRecipeKey = null;
+
+function openRecipe(di, mi) {
+  const m = STATE.plan[di].meals[mi];
+  const d = STATE.plan[di];
+  const key = `${di}-${mi}`;
+  currentRecipeKey = key;
+  recipeData = null;
+  recipeBaseServings = 1;
+  recipeCurrentServings = 1;
+  completedSteps = new Set();
+
+  document.getElementById('recipe-label').textContent = m.label + ' · ' + d.day;
+  document.getElementById('recipe-title').textContent = m.name;
+  document.getElementById('recipe-meta').innerHTML = '';
+  document.getElementById('recipe-modal').classList.add('open');
+
+  const cached = recipeCache[key];
+
+  if (cached && cached !== 'loading' && cached !== 'error') {
+    // Already cached — show instantly
+    recipeData = cached;
+    recipeBaseServings = cached.servings || 1;
+    recipeCurrentServings = 1;
+    document.getElementById('recipe-body').innerHTML = '';
+    renderRecipeBody();
+  } else if (cached === 'loading') {
+    // Background fetch in progress — show spinner, will auto-render when done
+    document.getElementById('recipe-body').innerHTML = `<div class="recipe-loading"><div class="recipe-loading-spinner"></div><div class="recipe-loading-text">Almost ready…</div></div>`;
+  } else {
+    // Not in cache yet — fetch now
+    document.getElementById('recipe-body').innerHTML = `<div class="recipe-loading"><div class="recipe-loading-spinner"></div><div class="recipe-loading-text">Building recipe…</div></div>`;
+    recipeCache[key] = 'loading';
+    buildRecipePrompt(m, d).then(recipe => {
+      recipeCache[key] = recipe;
+      if (currentRecipeKey === key) {
+        recipeData = recipe;
+        recipeBaseServings = recipe.servings || 1;
+        recipeCurrentServings = 1;
+        renderRecipeBody();
+      }
+    }).catch(() => {
+      recipeCache[key] = 'error';
+      if (currentRecipeKey === key) {
+        document.getElementById('recipe-body').innerHTML = `<div style="text-align:center;padding:40px 20px;font-size:14px;color:#c0392b">Couldn't load recipe. Try again.</div>`;
+      }
+    });
+  }
+}
+
+async function buildRecipePrompt(meal, day) {
+  const p = STATE.profile;
+  const prompt = `You are a recipe writer. Create a clear, practical recipe for this meal.
+
+Meal: ${meal.name}
+Description: ${meal.desc}
+Macros per serving: ${meal.protein}g protein, ${meal.carbs}g carbs, ${meal.fat}g fat
+Context: ${meal.label} on ${day.day} (${day.activity || day.type} day)
+${p?.dislikes ? `Avoid: ${p.dislikes}` : ''}
+${p?.allergies ? `Allergies: ${p.allergies}` : ''}
+${p?.dietReqs?.length ? `Diet: ${p.dietReqs.join(', ')}` : ''}
+
+Write a recipe for 1 serving. Respond ONLY with this exact JSON structure, no markdown, no extra text:
+{
+  "servings": 1,
+  "prepTime": "5 min",
+  "cookTime": "15 min",
+  "ingredients": [
+    { "name": "chicken breast", "qty": "150g" }
+  ],
+  "steps": [
+    { "text": "Season the chicken with salt, pepper and garlic powder.", "time": null },
+    { "text": "Heat a pan over medium-high heat with a splash of olive oil. Cook chicken 5–6 min each side until cooked through.", "time": "12 min" }
+  ],
+  "tip": "Optional chef tip or meal prep note here, or null if none."
+}`;
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1500, messages: [{ role: 'user', content: prompt }] })
+  });
+  const data = await resp.json();
+  const text = data.content.map(b => b.text || '').join('').replace(/```json|```/g, '').trim();
+  return JSON.parse(text);
+}
+
+function renderRecipeBody() {
+  if (!recipeData) return;
+  const scale = recipeCurrentServings / recipeBaseServings;
+
+  const totalMins = parseMins(recipeData.prepTime) + parseMins(recipeData.cookTime);
+  const totalStr = totalMins > 0 ? `${totalMins} min total` : '';
+
+  document.getElementById('recipe-meta').innerHTML = `
+    <span class="recipe-meta-pill">⏱ ${recipeData.prepTime} prep</span>
+    <span class="recipe-meta-pill">🔥 ${recipeData.cookTime} cook</span>
+    ${totalStr ? `<span class="recipe-meta-pill">${totalStr}</span>` : ''}
+    <div class="recipe-servings-row">
+      <span class="recipe-servings-label">Servings:</span>
+      <button class="recipe-serv-btn" onclick="changeServings(-1)">−</button>
+      <span class="recipe-serv-count" id="serv-count">${recipeCurrentServings}</span>
+      <button class="recipe-serv-btn" onclick="changeServings(1)">+</button>
+    </div>
+  `;
+
+  const ingredients = recipeData.ingredients.map(ing => {
+    const scaled = scaleQty(ing.qty, scale);
+    return `<div class="recipe-ingredient"><span class="recipe-ing-name">${ing.name}</span><span class="recipe-ing-qty">${scaled}</span></div>`;
+  }).join('');
+
+  const steps = recipeData.steps.map((s, i) => {
+    const done = completedSteps.has(i);
+    return `
+      <div class="recipe-step ${done ? 'done' : ''}" id="rstep-${i}" onclick="toggleStep(${i})">
+        <div class="recipe-step-check"></div>
+        <div class="recipe-step-num">${done ? '✓' : i + 1}</div>
+        <div class="recipe-step-body">
+          <div class="recipe-step-text">${s.text}</div>
+          ${s.time ? `<div class="recipe-step-time">⏱ ${s.time}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const tip = recipeData.tip ? `<div class="recipe-tip">💡 ${recipeData.tip}</div>` : '';
+
+  document.getElementById('recipe-body').innerHTML = `
+    <div class="recipe-section-title">Ingredients</div>
+    ${ingredients}
+    <div class="recipe-section-title" style="display:flex;justify-content:space-between;align-items:center;">
+      <span>Method</span>
+      ${completedSteps.size > 0 ? `<span onclick="resetSteps()" style="font-size:11px;color:#ccc;cursor:pointer;text-transform:none;letter-spacing:0;font-weight:400;">reset</span>` : ''}
+    </div>
+    <div class="recipe-steps">${steps}</div>
+    ${tip}
+  `;
+}
+
+function toggleStep(i) {
+  if (completedSteps.has(i)) {
+    completedSteps.delete(i);
+  } else {
+    completedSteps.add(i);
+  }
+  renderRecipeBody();
+}
+
+function resetSteps() {
+  completedSteps.clear();
+  renderRecipeBody();
+}
+
+function changeServings(delta) {
+  recipeCurrentServings = Math.max(1, Math.min(10, recipeCurrentServings + delta));
+  const sc = document.getElementById('serv-count');
+  if (sc) sc.textContent = recipeCurrentServings;
+  renderRecipeBody();
+}
+
+function scaleQty(qty, scale) {
+  if (scale === 1) return qty;
+  return qty.replace(/(\d+\.?\d*)/g, (match) => {
+    const num = parseFloat(match) * scale;
+    return num % 1 === 0 ? num.toString() : num.toFixed(1).replace(/\.0$/, '');
+  });
+}
+
+function parseMins(str) {
+  if (!str) return 0;
+  const m = str.match(/(\d+)/);
+  return m ? parseInt(m[1]) : 0;
+}
+
+function closeRecipeModal() {
+  document.getElementById('recipe-modal').classList.remove('open');
+}
+
+// ─── Edit meal ───
+let editDayIdx = null, editMealIdx = null, activeEditTab = 'update';
+
+function openEditMeal(di, mi) {
+  editDayIdx = di; editMealIdx = mi;
+  const m = STATE.plan[di].meals[mi];
+  const d = STATE.plan[di];
+  document.getElementById('edit-meal-modal-title').textContent = 'Edit meal';
+  document.getElementById('edit-meal-modal-sub').textContent = `${m.label} · ${d.day}`;
+  // Prefill update tab
+  document.getElementById('edit-name').value = m.name;
+  document.getElementById('edit-desc').value = m.desc;
+  document.getElementById('edit-protein').value = m.protein || '';
+  document.getElementById('edit-carbs').value = m.carbs || '';
+  document.getElementById('edit-fat').value = m.fat || '';
+  updateEditCalsDisplay();
+  // Clear takeout tab
+  document.getElementById('takeout-name').value = '';
+  document.getElementById('takeout-protein').value = '';
+  document.getElementById('takeout-carbs').value = '';
+  document.getElementById('takeout-fat').value = '';
+  document.getElementById('takeout-cals-display').value = '';
+  document.getElementById('takeout-lookup-result').textContent = '';
+  document.getElementById('takeout-lookup-btn').disabled = false;
+  document.getElementById('takeout-lookup-btn').textContent = 'Look up macros automatically ↗';
+  switchEditTab('update');
+  document.getElementById('edit-meal-modal').classList.add('open');
+}
+
+function closeEditMealModal() {
+  document.getElementById('edit-meal-modal').classList.remove('open');
+}
+
+function switchEditTab(tab) {
+  activeEditTab = tab;
+  document.querySelectorAll('.edit-meal-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.edit-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('edit-tab-' + tab).classList.add('active');
+  document.getElementById('edit-panel-' + tab).classList.add('active');
+}
+
+function updateEditCalsDisplay() {
+  const p = parseFloat(document.getElementById('edit-protein').value) || 0;
+  const c = parseFloat(document.getElementById('edit-carbs').value) || 0;
+  const f = parseFloat(document.getElementById('edit-fat').value) || 0;
+  document.getElementById('edit-cals-display').value = Math.round(p*4 + c*4 + f*9) || '';
+}
+
+function updateTakeoutCalsDisplay() {
+  const p = parseFloat(document.getElementById('takeout-protein').value) || 0;
+  const c = parseFloat(document.getElementById('takeout-carbs').value) || 0;
+  const f = parseFloat(document.getElementById('takeout-fat').value) || 0;
+  document.getElementById('takeout-cals-display').value = Math.round(p*4 + c*4 + f*9) || '';
+}
+
+// Wire up live calorie calc to macro inputs
+document.addEventListener('input', e => {
+  if (['edit-protein','edit-carbs','edit-fat'].includes(e.target.id)) updateEditCalsDisplay();
+  if (['takeout-protein','takeout-carbs','takeout-fat'].includes(e.target.id)) updateTakeoutCalsDisplay();
+});
+
+async function lookupTakeout() {
+  const name = document.getElementById('takeout-name').value.trim();
+  if (!name) { document.getElementById('takeout-lookup-result').textContent = 'Enter what you got first.'; return; }
+  const btn = document.getElementById('takeout-lookup-btn');
+  const resultEl = document.getElementById('takeout-lookup-result');
+  btn.disabled = true;
+  btn.textContent = 'Looking up…';
+  resultEl.textContent = '';
+  resultEl.style.color = '#888';
+
+  const prompt = `Give the approximate macros for: "${name}".
+Be specific — if it's a known fast food item use the actual nutrition info.
+Respond ONLY with JSON, no markdown:
+{"protein":0,"carbs":0,"fat":0,"note":"brief portion description"}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 200, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await resp.json();
+    const text = data.content.map(b => b.text||'').join('').replace(/```json|```/g,'').trim();
+    const macros = JSON.parse(text);
+    document.getElementById('takeout-protein').value = macros.protein || '';
+    document.getElementById('takeout-carbs').value = macros.carbs || '';
+    document.getElementById('takeout-fat').value = macros.fat || '';
+    updateTakeoutCalsDisplay();
+    resultEl.textContent = macros.note ? `Based on: ${macros.note}` : 'Macros filled — adjust if needed.';
+    resultEl.style.color = '#1d9e75';
+  } catch(e) {
+    resultEl.textContent = 'Lookup failed — fill in manually.';
+    resultEl.style.color = '#c0392b';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Look up macros automatically ↗';
+}
+
+function saveEditMeal() {
+  const m = STATE.plan[editDayIdx].meals[editMealIdx];
+  if (activeEditTab === 'update') {
+    const name = document.getElementById('edit-name').value.trim();
+    if (!name) return;
+    STATE.plan[editDayIdx].meals[editMealIdx] = {
+      ...m,
+      name,
+      desc: document.getElementById('edit-desc').value.trim() || m.desc,
+      protein: parseFloat(document.getElementById('edit-protein').value) || m.protein,
+      carbs: parseFloat(document.getElementById('edit-carbs').value) || m.carbs,
+      fat: parseFloat(document.getElementById('edit-fat').value) || m.fat,
+      edited: true,
+      takeout: false,
+    };
+    // Clear recipe cache so it regenerates
+    delete recipeCache[`${editDayIdx}-${editMealIdx}`];
+  } else {
+    const name = document.getElementById('takeout-name').value.trim();
+    if (!name) return;
+    STATE.plan[editDayIdx].meals[editMealIdx] = {
+      ...m,
+      name,
+      desc: `Takeout: ${name}`,
+      protein: parseFloat(document.getElementById('takeout-protein').value) || 0,
+      carbs: parseFloat(document.getElementById('takeout-carbs').value) || 0,
+      fat: parseFloat(document.getElementById('takeout-fat').value) || 0,
+      takeout: true,
+      edited: false,
+    };
+    delete recipeCache[`${editDayIdx}-${editMealIdx}`];
+  }
+  saveState();
+  closeEditMealModal();
+  renderPlan();
+  showToast('Meal updated');
+}
+
+// ─── Extras ───
+let extrasTargetDay = null;
+
+function openExtrasModal(di) {
+  extrasTargetDay = di;
+  document.getElementById('extra-name').value = '';
+  document.getElementById('extra-cals').value = '';
+  document.getElementById('extra-protein').value = '';
+  document.getElementById('extra-carbs').value = '';
+  document.getElementById('extra-fat').value = '';
+  document.getElementById('extra-lookup-result').textContent = '';
+  document.getElementById('extra-lookup-btn').disabled = false;
+  document.getElementById('extras-modal').classList.add('open');
+  setTimeout(() => document.getElementById('extra-name').focus(), 100);
+}
+
+function closeExtrasModal() {
+  document.getElementById('extras-modal').classList.remove('open');
+}
+
+async function lookupExtra() {
+  const name = document.getElementById('extra-name').value.trim();
+  if (!name) { document.getElementById('extra-lookup-result').textContent = 'Enter a name first.'; return; }
+  const btn = document.getElementById('extra-lookup-btn');
+  const resultEl = document.getElementById('extra-lookup-result');
+  btn.disabled = true;
+  btn.textContent = 'Looking up…';
+  resultEl.textContent = '';
+
+  const prompt = `Give the approximate macros for one typical serving of: "${name}".
+Respond ONLY with JSON, no markdown, no extra text:
+{"cals":0,"protein":0,"carbs":0,"fat":0,"note":"e.g. 600ml bottle or 45g bar"}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 200, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await resp.json();
+    const text = data.content.map(b => b.text||'').join('').replace(/```json|```/g,'').trim();
+    const macros = JSON.parse(text);
+    document.getElementById('extra-cals').value = macros.cals || '';
+    document.getElementById('extra-protein').value = macros.protein || '';
+    document.getElementById('extra-carbs').value = macros.carbs || '';
+    document.getElementById('extra-fat').value = macros.fat || '';
+    resultEl.textContent = macros.note ? `Based on: ${macros.note}` : 'Macros filled in — adjust if needed.';
+    resultEl.style.color = '#1d9e75';
+  } catch(e) {
+    resultEl.textContent = 'Lookup failed — fill in manually.';
+    resultEl.style.color = '#c0392b';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Look up macros automatically ↗';
+}
+
+function saveExtra() {
+  const name = document.getElementById('extra-name').value.trim();
+  if (!name) { document.getElementById('extra-name').focus(); return; }
+  const extra = {
+    name,
+    cals: parseFloat(document.getElementById('extra-cals').value) || 0,
+    protein: parseFloat(document.getElementById('extra-protein').value) || 0,
+    carbs: parseFloat(document.getElementById('extra-carbs').value) || 0,
+    fat: parseFloat(document.getElementById('extra-fat').value) || 0,
+  };
+  if (!STATE.extras[extrasTargetDay]) STATE.extras[extrasTargetDay] = [];
+  STATE.extras[extrasTargetDay].push(extra);
+  saveState();
+  closeExtrasModal();
+  renderPlan();
+  showToast(`${name} added`);
+}
+
+function removeExtra(di, ei) {
+  STATE.extras[di].splice(ei, 1);
+  saveState();
+  renderPlan();
+}
+
+// ─── Storage ───
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    plan: STATE.plan, grocery: STATE.grocery,
+    profile: STATE.profile, checkedItems: STATE.checkedItems,
+    extras: STATE.extras,
+  }));
+}
+
+function confirmReset() {
+  if (confirm('Clear your current plan and start over?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    STATE = { profile: null, plan: null, grocery: null, checkedItems: {}, activePlanDay: 0, extras: {} };
+    ['plan','week','grocery'].forEach(t => { document.getElementById('tab-'+t).disabled = true; });
+    // reset step
+    document.querySelectorAll('.ob-step').forEach(s => s.classList.remove('active'));
+    document.getElementById('step-1').classList.add('active');
+    currentStep = 1;
+    updateProgress(1);
+    showPage('setup');
+    showToast('Plan cleared');
+  }
+}
+
+// ─── Helpers ───
+function emptyState(title, sub) {
+  return `<div style="text-align:center;padding:60px 20px"><div style="font-size:18px;font-weight:500;margin-bottom:8px">${title}</div><div style="font-size:14px;color:#888;margin-bottom:20px">${sub}</div><button style="background:#1a1a18;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;cursor:pointer;font-family:inherit" onclick="showPage('setup')">Go to setup</button></div>`;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+updateProgress(1);
+boot();
+
+// Register service worker for PWA offline support
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
